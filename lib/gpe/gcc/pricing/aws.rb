@@ -65,7 +65,7 @@ module GPE; module GCC; module Pricing; module AWS
                 end
             end
         end
-        out_file = File.new("#{output_dir}/aws-pricing-products-#{name}.json", 'w+')
+        out_file = File.new("#{output_dir}/cache/aws-pricing-products-#{name}.json", 'w+')
         out_file.write(JSON.dump(results))
         out_file.close
     end
@@ -99,17 +99,20 @@ module GPE; module GCC; module Pricing; module AWS
 
     def merge_all_files(name, output_dir)
         ret = []
-        files = Dir.glob("#{output_dir}/*.json")
+        files = Dir.glob("#{output_dir}/cache/aws-pricing-products-*.json")
         files.each{ |file| ret << JSON.parse(File.new(file).read) }
         ret.flatten!
-        File.new(name,'w').write(JSON.dump(ret))
+        outname = "#{output_dir}/#{name}"
+        Log.info("Merging all AWS files to '#{outname}'")
+        File.new(outname,'w').write(JSON.dump(ret))
         return nil
     end
 
 
-    def aws_collect_and_buiild(output_dir)
+    def aws_collect_and_build(output_dir)
 
         get_products( 
+            output_dir: output_dir,
             name: "storage-e1", 
             options: { 
                 service_code: "AmazonEC2", 
@@ -121,6 +124,7 @@ module GPE; module GCC; module Pricing; module AWS
         )
     
         get_products( 
+            output_dir: output_dir,
             name: "linux-e1",     
             options: { 
                 service_code: "AmazonEC2", 
@@ -137,6 +141,7 @@ module GPE; module GCC; module Pricing; module AWS
         )
     
         get_products( 
+            output_dir: output_dir,
             name: "windows-e1",     
             options: { 
                 service_code: "AmazonEC2", 
@@ -152,7 +157,7 @@ module GPE; module GCC; module Pricing; module AWS
             }
         )
     
-        merge_all_files('aws-pricing.json',output_dir)
+        merge_all_files('aws.json',output_dir)
 
     end
 

@@ -144,12 +144,11 @@ module GPE; module GCC; module Pricing; module Azure
         return ret
     end
 
-    def save_all(storage,vms,skus,dir)
+    def save_all(storage,vms,skus,output_dir)
         Log.info("Saving data out to disk.")
-        FileUtils.mkdir_p(dir)
-        File.open("#{dir}/skus.json",'w'){ |f| f << skus.to_json }
-        File.open("#{dir}/storage.json",'w'){ |f| f << storage.to_json }
-        File.open("#{dir}/vms.json",'w'){ |f| f << vms.to_json }
+        File.open("#{output_dir}/cache/azure-skus.json",'w'){ |f| f << skus.to_json }
+        File.open("#{output_dir}/cache/azure-storage.json",'w'){ |f| f << storage.to_json }
+        File.open("#{output_dir}/cache/azure-vms.json",'w'){ |f| f << vms.to_json }
     end
 
     def azure_collect_and_build(output_dir)
@@ -166,7 +165,7 @@ module GPE; module GCC; module Pricing; module Azure
         save_all(storage,vms,skus,output_dir)
 
         # Get product from the sku file. Split by vms and disks (storage)
-        skus                        = JSON.parse(File.open("#{output_dir}/skus.json",'r').read)
+        skus                        = JSON.parse(File.open("#{output_dir}/cache/azure-skus.json",'r').read)
         eastus_skus_only            = skus.group_by{ |sku| sku['locations'].first }['eastus']
         skus_by_type                = eastus_skus_only.group_by{ |sku| sku['resourceType'] }
         vm_skus                     = skus_by_type['virtualMachines']
@@ -175,14 +174,14 @@ module GPE; module GCC; module Pricing; module Azure
         # Get storage pricing
         # Storage is serviceId of "DZH317F1HKN0"
         # Type of "Consumption", "Reservation"
-        storage                     = JSON.parse(File.open("#{output_dir}/storage.json",'r').read)
+        storage                     = JSON.parse(File.open("#{output_dir}/cache/azure-storage.json",'r').read)
 
         # VMs are a service id of "DZH313Z7MMC8"
         # Type of "Consumption", "Reservation", "DevTestConsumption"
         # productName e.g "Virtual Machines A Series Basic Windows",
         # skuName e.g "A0 Low Priority", Low Priority, 
         # armRegionName             => 'eastus'  (we don't use region for AWS. Can use it here right now.)
-        vms                         = JSON.parse(File.open("#{output_dir}/vms.json",'r').read)
+        vms                         = JSON.parse(File.open("#{output_dir}/cache/azure-vms.json",'r').read)
         vms_eastus_only             = vms.group_by{ |x| x['armRegionName'] == 'eastus' }[true]
         vms_no_spot_or_low_priority = vms_eastus_only.group_by{ |x| x['skuName'] =~ /(Low Priority|Spot)/i ? true : false }[false]
 
@@ -216,8 +215,9 @@ module GPE; module GCC; module Pricing; module Azure
             vms_eastus_price_list << sku
         end
 
-        File.open("#{output_dir}/azure.json",'w'){ |f| f << vms_eastus_price_list.to_json }
-        Log.info("Done")
+        outname = "#{output_dir}/azure.json"
+        File.open(outname,'w'){ |f| f << vms_eastus_price_list.to_json }
+        Log.info("Merging all Azure files to '#{outname}'")
     end
 
 end; end; end; end
