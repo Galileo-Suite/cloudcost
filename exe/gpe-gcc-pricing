@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optimist'
-require 'gpe/gcc/pricing/azure'
-require 'gpe/gcc/pricing/aws'
+require 'gpe/gcc/base'
 
 =begin
 
