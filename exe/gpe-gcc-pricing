@@ -25,12 +25,15 @@ include GPE::GCC::Pricing::Azure
 
 module GPE; module GCC; module Pricing
     
-    opts = Optimist::options do
+    Log = Logger.new(STDOUT)
+
+    OPTS = Optimist::options do
         opt :output, "Output Directory", :type => :string, :default => '.', :required => true
     end
     
-    output_dir = opts[:output]
+    output_dir = OPTS[:output]
     
-    azure_collect_and_build(output_dir)
+    # azure_collect_and_build(output_dir)
+    aws_connect_and_build(output_dir)
 
 end; end; end

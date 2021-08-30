@@ -20,4 +20,6 @@ Or install it yourself as:
 
 ## Usage
 
+```ruby
 bundle exec gpe-gcc-pricing -o <output_directory>
+```

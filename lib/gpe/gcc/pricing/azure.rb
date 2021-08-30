@@ -8,8 +8,6 @@ require 'logger'
 
 module GPE; module GCC; module Pricing; module Azure
 
-    Log = Logger.new(STDOUT)
-
     ClientId        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
     ClientSecret    = "AtQmhrrZoCQY1_xzanrWOg.CP11HBkk-p6"
 

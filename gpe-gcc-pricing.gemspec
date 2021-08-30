@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "optimist"
   spec.add_runtime_dependency "oj"
   spec.add_runtime_dependency "awesome_print"
+  spec.add_runtime_dependency "aws-sdk-pricing"
 end
