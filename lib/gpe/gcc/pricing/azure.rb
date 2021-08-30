@@ -26,6 +26,17 @@ module GPE; module GCC; module Pricing; module Azure
         # "southcentralus" => "US South Central",
         # "westcentralus"  => "US West Central",
     }
+    
+    def check_terms(terms)
+        case 
+        when terms.nil?
+            return nil
+        when terms.length != 1 
+            raise 'too many terms found, there is something wrong. '
+        else
+            return terms.first
+        end
+    end
 
     def sku_cap_to_h(sku)
         ret = {}
@@ -141,6 +152,76 @@ module GPE; module GCC; module Pricing; module Azure
         File.open("#{dir}/skus.json",'w'){ |f| f << skus.to_json }
         File.open("#{dir}/storage.json",'w'){ |f| f << storage.to_json }
         File.open("#{dir}/vms.json",'w'){ |f| f << vms.to_json }
+    end
+
+    # put all this together. definately some streamlining 
+    # can be done here.
+    def azure_collect_and_build(output_dir)
+        # Fetch and compile pricing for storage and vms
+        storage = get_price_data_for('Storage')
+
+        vms = get_price_data_for('Virtual Machines')
+
+        # This is all the sku or product data limited to disks and vms
+        skus = filter_sku_for_us_locations_and_vms_disks_only(get_azure_sku_card())
+        skus.each{ |x| cap = sku_cap_to_h(x); x['capabilities'] = cap }
+
+        # Save this to cache/*.json
+        save_all(storage,vms,skus,output_dir)
+
+        # Get product from the sku file. Split by vms and disks (storage)
+        skus                        = JSON.parse(File.open("#{output_dir}/skus.json",'r').read)
+        eastus_skus_only            = skus.group_by{ |sku| sku['locations'].first }['eastus']
+        skus_by_type                = eastus_skus_only.group_by{ |sku| sku['resourceType'] }
+        vm_skus                     = skus_by_type['virtualMachines']
+        storage_skus                = skus_by_type['disks']
+
+        # Get storage pricing
+        # Storage is serviceId of "DZH317F1HKN0"
+        # Type of "Consumption", "Reservation"
+        storage                     = JSON.parse(File.open("#{output_dir}/storage.json",'r').read)
+
+        # VMs are a service id of "DZH313Z7MMC8"
+        # Type of "Consumption", "Reservation", "DevTestConsumption"
+        # productName e.g "Virtual Machines A Series Basic Windows",
+        # skuName e.g "A0 Low Priority", Low Priority, 
+        # armRegionName             => 'eastus'  (we don't use region for AWS. Can use it here right now.)
+        vms                         = JSON.parse(File.open("#{output_dir}/vms.json",'r').read)
+        vms_eastus_only             = vms.group_by{ |x| x['armRegionName'] == 'eastus' }[true]
+        vms_no_spot_or_low_priority = vms_eastus_only.group_by{ |x| x['skuName'] =~ /(Low Priority|Spot)/i ? true : false }[false]
+
+        # Get ondemand / consumption pricing
+        vms_eastus_ondemand         = vms_no_spot_or_low_priority.group_by{ |x| x['type'] == 'Consumption' }[true]
+        vms_by_os                   = vms_eastus_ondemand.group_by{ |x| x['productName'] =~ /windows$/i ? true : false }
+        vms_windows                 = vms_by_os[true].group_by{ |x| x['armSkuName']}
+        vms_linux                   = vms_by_os[false].group_by{ |x| x['armSkuName']}
+
+        # Get reserved pricing
+        vms_eastus_res               = vms_no_spot_or_low_priority.group_by{ |x| x['type'] == 'Reservation' }[true];
+        vms_eastus_res_by_term       = vms_eastus_res.group_by{ |x| x['reservationTerm'] }
+        vms_eastus_res_1yr           = vms_eastus_res_by_term['1 Year'].group_by{ |x| x['armSkuName']}
+        vms_eastus_res_3yr           = vms_eastus_res_by_term['3 Years'].group_by{ |x| x['armSkuName']}
+        vms_eastus_res_5yr           = vms_eastus_res_by_term['5 Years'].group_by{ |x| x['armSkuName']}
+
+        vms_eastus_price_list = []
+        vm_skus.each do |sku|
+            name = sku['name']
+            sku['terms'] = {
+                'OnDemand': {
+                    'windows': check_terms(vms_windows[name]),
+                    'linux': check_terms(vms_linux[name])
+                },
+                'Reserved': {
+                    '1year': check_terms(vms_eastus_res_1yr[name]),
+                    '3year': check_terms(vms_eastus_res_3yr[name]),
+                    '5year': check_terms(vms_eastus_res_5yr[name])
+                }
+            }
+            vms_eastus_price_list << sku
+        end
+
+        File.open("#{output_dir}/azure.json",'w'){ |f| f << vms_eastus_price_list.to_json }
+        Log.info("Done")
     end
 
 end; end; end; end
