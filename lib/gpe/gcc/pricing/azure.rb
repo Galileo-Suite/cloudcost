@@ -154,8 +154,6 @@ module GPE; module GCC; module Pricing; module Azure
         File.open("#{dir}/vms.json",'w'){ |f| f << vms.to_json }
     end
 
-    # put all this together. definately some streamlining 
-    # can be done here.
     def azure_collect_and_build(output_dir)
         # Fetch and compile pricing for storage and vms
         storage = get_price_data_for('Storage')
