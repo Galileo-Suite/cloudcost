@@ -1,4 +1,29 @@
 #!/usr/bin/env ruby
 
+require 'optimist'
+require 'gpe/gcc/pricing/azure'
 
-puts 'hello'
+module GPE; module GCC; module Pricing
+    
+    include GPE::GCC::Pricing::Azure
+
+    opts = Optimist::options do
+        opt :output, "Output Directory", :type => :string, :default => '.', :required => true
+    end
+    
+    output_dir = opts[:output]
+
+    # Fetch and compile pricing for storage and vms
+    storage = get_price_data_for('Storage')
+    vms = get_price_data_for('Virtual Machines')
+
+    # This is all the sku or product data limited to disks and vms
+    skus = filter_sku_for_us_locations_and_vms_disks_only(get_azure_sku_card())
+    skus.each{ |x| cap = sku_cap_to_h(x); x['capabilities'] = cap }
+
+    # Save this to cache/*.json
+    save_all(storage,vms,skus,output)
+
+    Log.info("Done")
+
+end; end; end
