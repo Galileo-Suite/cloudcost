@@ -2,7 +2,7 @@
 
 Used to create the `azure.json` and `aws.json` pricing files for the GCC product.
 
-The production destination for these 2 files in the directory identified by:
+The production destination for these 2 files is in the directory identified by:
 
 ```ruby
 GCC_PRICING_DIR = Galileo.config[:ui]['gcc']['pricing']
@@ -31,7 +31,7 @@ Or install it yourself as:
 Envoke with or without the `-o output_directory` option. The default is the current
 location: `./gcc`.
 
-If `-o` does not exist then you will need to create it.
+If the `-o <output_directory>` does not exist then you will need to create it before this is run.
 
 ```ruby
 bundle exec gpe-gcc-pricing [ -o <output_directory> ] 
