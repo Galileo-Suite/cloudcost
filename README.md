@@ -1,6 +1,14 @@
-# Galileo Cloud Compass Pricing File Utility
+# Galileo Cloud Compass Pricing File "Get" Utility
 
-Used to create the azure.json and aws.json pricing files for the GCC product.
+Used to create the `azure.json` and `aws.json` pricing files for the GCC product.
+
+The production destination for these 2 files is in the directory identified by:
+
+```ruby
+GCC_PRICING_DIR = Galileo.config[:ui]['gcc']['pricing']
+```
+
+In production this would be `ui/lib/galileo/visualizations/src/gcc/pricing`.
 
 ## Installation
 
@@ -20,17 +28,22 @@ Or install it yourself as:
 
 ## Usage
 
-Envoke with or without the `-o output_directory` option. The default is `./gcc`.
+Envoke with or without the `-o output_directory` option. The default is the current
+location: `./gcc`.
 
-If `-o` does not exist then you will need to create it.
+If the `-o <output_directory>` does not exist then you will need to create it before this is run.
+
 ```ruby
 bundle exec gpe-gcc-pricing [ -o <output_directory> ] 
-```
 
-The best option is to create a new `--output` directory each time: 
+# or
 
-```bash
 rm -rf ~/gcc && mkdir ~/gcc && bundle exec gpe-gcc-pricing -o ~/gcc
 ```
 
+Or to update the files in place for production you can run this as follows (gpe-server-home must be gpe-server root)
+
+```bash
+ bundle exec gpe-gcc-pricing -o gpe-server-home/ui/lib/galileo/visualizations/src/gcc/pricing/
+```
 
