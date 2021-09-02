@@ -33,16 +33,14 @@ module GPE; module GCC; module Pricing
     
     # Set output dir if it exists create cache under it.
     output_dir = OPTS[:output]    
-    if File.exist?(output_dir)
-        FileUtils.mkdir_p("#{output_dir}/cache")
-    else
+    unless File.exist?(output_dir)
         Log.error("Output directory does not exist.")
         exit 1
     end
 
     Log.info("Collect and build Azure pricing files...")
     azure_collect_and_build(output_dir)
-    
+
     Log.info("Collect and build AWS pricing files...")
     aws_collect_and_build(output_dir)
 

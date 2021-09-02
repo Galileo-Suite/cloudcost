@@ -1,6 +1,7 @@
 require 'aws-sdk-pricing'
 require 'awesome_print'
 require 'logger'
+require 'tempfile'
 
 module GPE; module GCC; module Pricing; module AWS
 
@@ -65,9 +66,10 @@ module GPE; module GCC; module Pricing; module AWS
                 end
             end
         end
-        out_file = File.new("#{output_dir}/cache/aws-pricing-products-#{name}.json", 'w+')
+        out_file = Tempfile.new
         out_file.write(JSON.dump(results))
         out_file.close
+        return out_file
     end
 
     # Get the service product list 
@@ -97,9 +99,8 @@ module GPE; module GCC; module Pricing; module AWS
         out_file.close
     end
 
-    def merge_all_files(name, output_dir)
+    def merge_all_files(name, files, output_dir)
         ret = []
-        files = Dir.glob("#{output_dir}/cache/aws-pricing-products-*.json")
         files.each{ |file| ret << JSON.parse(File.new(file).read) }
         ret.flatten!
         outname = "#{output_dir}/#{name}"
@@ -111,7 +112,9 @@ module GPE; module GCC; module Pricing; module AWS
 
     def aws_collect_and_build(output_dir)
 
-        get_products( 
+       files = []    
+
+       files << get_products( 
             output_dir: output_dir,
             name: "storage-e1", 
             options: { 
@@ -123,7 +126,7 @@ module GPE; module GCC; module Pricing; module AWS
             } 
         )
     
-        get_products( 
+       files <<  get_products( 
             output_dir: output_dir,
             name: "linux-e1",     
             options: { 
@@ -140,7 +143,7 @@ module GPE; module GCC; module Pricing; module AWS
             }
         )
     
-        get_products( 
+        files << get_products( 
             output_dir: output_dir,
             name: "windows-e1",     
             options: { 
@@ -157,7 +160,7 @@ module GPE; module GCC; module Pricing; module AWS
             }
         )
     
-        merge_all_files('aws.json',output_dir)
+        merge_all_files('aws.json',files, output_dir)
 
     end
 

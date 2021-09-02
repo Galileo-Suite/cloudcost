@@ -143,14 +143,8 @@ module GPE; module GCC; module Pricing; module Azure
         return ret
     end
 
-    def save_all(storage,vms,skus,output_dir)
-        Log.info("Saving data out to disk.")
-        File.open("#{output_dir}/cache/azure-skus.json",'w'){ |f| f << skus.to_json }
-        File.open("#{output_dir}/cache/azure-storage.json",'w'){ |f| f << storage.to_json }
-        File.open("#{output_dir}/cache/azure-vms.json",'w'){ |f| f << vms.to_json }
-    end
-
     def azure_collect_and_build(output_dir)
+
         # Fetch and compile pricing for storage and vms
         storage = get_price_data_for('Storage')
 
@@ -160,27 +154,17 @@ module GPE; module GCC; module Pricing; module Azure
         skus = filter_sku_for_us_locations_and_vms_disks_only(get_azure_sku_card())
         skus.each{ |x| cap = sku_cap_to_h(x); x['capabilities'] = cap }
 
-        # Save this to cache/*.json
-        save_all(storage,vms,skus,output_dir)
-
         # Get product from the sku file. Split by vms and disks (storage)
-        skus                        = JSON.parse(File.open("#{output_dir}/cache/azure-skus.json",'r').read)
         eastus_skus_only            = skus.group_by{ |sku| sku['locations'].first }['eastus']
         skus_by_type                = eastus_skus_only.group_by{ |sku| sku['resourceType'] }
         vm_skus                     = skus_by_type['virtualMachines']
         storage_skus                = skus_by_type['disks']
-
-        # Get storage pricing
-        # Storage is serviceId of "DZH317F1HKN0"
-        # Type of "Consumption", "Reservation"
-        storage                     = JSON.parse(File.open("#{output_dir}/cache/azure-storage.json",'r').read)
 
         # VMs are a service id of "DZH313Z7MMC8"
         # Type of "Consumption", "Reservation", "DevTestConsumption"
         # productName e.g "Virtual Machines A Series Basic Windows",
         # skuName e.g "A0 Low Priority", Low Priority, 
         # armRegionName             => 'eastus'  (we don't use region for AWS. Can use it here right now.)
-        vms                         = JSON.parse(File.open("#{output_dir}/cache/azure-vms.json",'r').read)
         vms_eastus_only             = vms.group_by{ |x| x['armRegionName'] == 'eastus' }[true]
         vms_no_spot_or_low_priority = vms_eastus_only.group_by{ |x| x['skuName'] =~ /(Low Priority|Spot)/i ? true : false }[false]
 
