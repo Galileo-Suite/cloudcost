@@ -1,5 +1,4 @@
 require 'awesome_print'
-require 'oj'
 require 'json'
 require 'benchmark'
 require 'net/http'
