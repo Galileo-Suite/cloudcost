@@ -24,7 +24,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install gpe-gcc-pricing
+    $ gem install gpe-gcc-pricing --path vendor/ruby
 
 ## Usage
 
