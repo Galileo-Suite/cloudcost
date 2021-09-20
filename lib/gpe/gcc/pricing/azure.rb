@@ -5,10 +5,25 @@ require 'net/http'
 require 'ostruct'
 require 'logger'
 
+# {
+#     "clientId": "56b8cf44-e5d8-465a-b551-468fb1f9b8ca",
+#     "clientSecret": "uu8eXz6RsrjVfsSae4bS_7Y~qB3RsGZ_4o",
+#     "subscriptionId": "345c9bee-914f-42e8-9600-77b3b10ba069",
+#     "tenantId": "4376b3ca-4676-4ba7-8757-8b7fa5c43d83",
+#     "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+#     "resourceManagerEndpointUrl": "https://management.azure.com/",
+#     "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+#     "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+#     "galleryEndpointUrl": "https://gallery.azure.com/",
+#     "managementEndpointUrl": "https://management.core.windows.net/"
+# }
+
 module GPE; module GCC; module Pricing; module Azure
 
-    ClientId        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
-    ClientSecret    = "AtQmhrrZoCQY1_xzanrWOg.CP11HBkk-p6"
+    CLIENTID        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
+    CLIENTSECRET    = "uu8eXz6RsrjVfsSae4bS_7Y~qB3RsGZ_4o"
+    SUBSCRIPTION    = "345c9bee-914f-42e8-9600-77b3b10ba069"   # https://portal.azure.com/#blade/Microsoft_Azure_GTM/ModernBillingMenuBlade/Overview
+    TENENT          = "4376b3ca-4676-4ba7-8757-8b7fa5c43d83"   # https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview
 
     # We will collect all us locations but when building the price
     # in the azure_build_price_file.rb script we will only get
@@ -46,13 +61,13 @@ module GPE; module GCC; module Pricing; module Azure
 
     def get_azure_auth()
         Log.info("Getting the Azure Access token.")
-        uri = URI('https://login.microsoftonline.com/4376b3ca-4676-4ba7-8757-8b7fa5c43d83/oauth2/token')
+        uri = URI("https://login.microsoftonline.com/#{TENENT}/oauth2/token")
         res = Net::HTTP::post_form(uri, 
             {
                 'grant_type' => "client_credentials",
                 'resource' => "https://management.core.windows.net",
-                'client_id' => ClientId,
-                'client_secret' => ClientSecret,
+                'client_id' => CLIENTID,
+                'client_secret' => CLIENTSECRET,
             }
         )
         return parse_response(res)['access_token']
@@ -63,14 +78,16 @@ module GPE; module GCC; module Pricing; module Azure
             Log.info("Request was successful.")
             return JSON.parse(res.body) 
         else
-            Log.error('Request returned an error.')
+            body = JSON.parse(res.body)
+            Log.error("Request returned an error: #{body['error']['message']}")
+            exit 1
         end
         return nil
     end
 
     def get_sku_card_response(access_token)
         Log.info("Getting Azure SKU (product) list.")
-        path = "https://management.azure.com/subscriptions/f24e5c35-383a-484c-81e6-6fc19a0692d6/providers/Microsoft.Compute/skus?api-version=2016-08-31-preview&%24filter=OfferDurableId+eq+'MS-AZR-0003P'+and+Currency+eq+'USD'+and+Locale+eq+'en-US'+and+RegionInfo+eq+'US'"
+        path = "https://management.azure.com/subscriptions/#{SUBSCRIPTION}/providers/Microsoft.Compute/skus?api-version=2016-08-31-preview&%24filter=OfferDurableId+eq+'MS-AZR-0003P'+and+Currency+eq+'USD'+and+Locale+eq+'en-US'+and+RegionInfo+eq+'US'"
         uri = URI(path)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true
