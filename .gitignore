@@ -6,3 +6,6 @@
 /spec/reports/
 /tmp/
 vendor
+ruby/
+aws.json
+azure.json
