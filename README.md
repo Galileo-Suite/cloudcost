@@ -8,23 +8,38 @@ The production destination for these 2 files is in the directory identified by:
 GCC_PRICING_DIR = Galileo.config[:ui]['gcc']['pricing']
 ```
 
-In production this would be `ui/lib/galileo/visualizations/src/gcc/pricing`.
+This location is `<gpe-server-home>/ui/lib/galileo/visualizations/src/gcc/pricing`.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Simpley clone the repo to run this standalone:
+
+```bash
+git clone git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git
+cd gpe-gcc-pricing
+bundle install --local
+mkdir gcc-files
+bundle exec gpe-gcc-pricing -o gcc-files
+```
+
+Or you can use the gem directly, add this line to your application's Gemfile.
+(this will vary based on where you fetch this from)
 
 ```ruby
-gem 'gpe-gcc-pricing'
+gem 'gpe-gcc-pricing', :git => "git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git"
 ```
 
 And then execute:
 
     $ bundle install
 
-Or install it yourself as:
+Or install it yourself as to local:
 
-    $ gem install gpe-gcc-pricing --path vendor/ruby
+    $ gem install ~/gpe-gcc-pricing-1.0.0.gem
+
+Or install it yourself to the default gem location:
+
+    $ gem install ~/gpe-gcc-pricing-1.0.0.gem --install-dir <you-local-path-here>
 
 ## Usage
 
