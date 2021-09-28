@@ -183,7 +183,12 @@ module GPE; module GCC; module Pricing; module Azure
         # skuName e.g "A0 Low Priority", Low Priority, 
         # armRegionName             => 'eastus'  (we don't use region for AWS. Can use it here right now.)
         vms_eastus_only             = vms.group_by{ |x| x['armRegionName'] == 'eastus' }[true]
-        vms_no_spot_or_low_priority = vms_eastus_only.group_by{ |x| x['skuName'] =~ /(Low Priority|Spot)/i ? true : false }[false]
+        
+        # Let's remove spot, Low or free versions
+        vms_no_spot_or_low_priority = vms_eastus_only.group_by do |x| 
+            x['skuName'].match(/(Low Priority|Spot)/i) or 
+            x['meterName'].match?(/free/i) 
+        end[false]
 
         # Get ondemand / consumption pricing
         vms_eastus_ondemand         = vms_no_spot_or_low_priority.group_by{ |x| x['type'] == 'Consumption' }[true]
