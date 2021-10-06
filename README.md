@@ -2,7 +2,8 @@
 
 Used to create the `azure.json` and `aws.json` pricing files for the GCC product.
 
-The production destination for these 2 files is in the directory identified by:
+The production destination for these 2 files is in the directory identified by the 
+following Galileo.config value:
 
 ```ruby
 GCC_PRICING_DIR = Galileo.config[:ui]['gcc']['pricing']
