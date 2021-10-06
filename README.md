@@ -18,7 +18,7 @@ Simpley clone the repo to run this standalone:
 ```bash
 git clone git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git
 cd gpe-gcc-pricing
-bundle install --local
+bundle install --path vendor/bundle
 mkdir gcc-files
 bundle exec gpe-gcc-pricing -o gcc-files
 ```
