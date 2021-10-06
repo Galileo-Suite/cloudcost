@@ -68,7 +68,7 @@ Or to update the files in place for production you can run this as follows (gpe-
 The AWS and Azure pricing file formats are similar but not identical. So that the pricing
 engine on the gpe-server side has 2 distinct code paths to parse and price each vendor.
 
-The AWS price file caputred here remains intact as-si.  It is not modified any way.
+The AWS price file caputred here remains intact as is.  It is not modified any way.
 
 The Azure SKU and price data/json is merged together via this (gpe-gcc-pricing) script 
 to more closely resemble the way the AWS pricing file is structured. It is JSON
@@ -86,4 +86,30 @@ gpe-server pricing process.
 
 Run the script and review a formated version of the `aws.json` and `azure.json` files 
 outputed by this code.
+
+## Azure and AWS Authentication
+
+It's important to understand that this script **REQUIRES** that  vendor access and authentication 
+are configured and functioning.
+
+### Azure
+
+The authentication for Azure is build into the script. The auth is only permitted to access
+the pricing files. It is attached to subscription for `rdavis` on the ATS group Azure / Microsoft
+account.
+
+### AWS 
+
+AWS requires that the local user that is running the script have the `$HOME/.aws` configurations
+in place. Commands, like the following, should produce valid AWS repsonses from the system you intend
+to run `gpe-gcc-pricing`:
+
+```bash
+aws ec2 describe-instances
+aws s3 ls
+```
+
+
+
+
 
