@@ -19,8 +19,8 @@ Simpley clone the repo to run this standalone:
 git clone git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git
 cd gpe-gcc-pricing
 bundle install --path vendor/bundle
-mkdir gcc-files
-bundle exec gpe-gcc-pricing -o gcc-files
+mkdir gcc
+bundle exec gpe-gcc-pricing
 ```
 
 Or you can use the gem directly, add this line to your application's Gemfile.
