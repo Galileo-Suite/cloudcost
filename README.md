@@ -21,6 +21,16 @@ cd gpe-gcc-pricing
 bundle install --path vendor/bundle
 mkdir gcc
 bundle exec gpe-gcc-pricing
+
+# Format the output (optional)
+cd gcc 
+jq '.' aws.json > f-aws.json
+jq '.' azure.json > f-azure.json
+
+# Move into the gpe-server branch for an MR  (make sure target dir is correct)
+mv f-aws.json ~/code/gpe-server/ui/lib/galileo/visualizations/src/gcc/pricing/aws.json
+mv f-azure.json ~/code/gpe-server/ui/lib/galileo/visualizations/src/gcc/pricing/azure.json
+
 ```
 
 Or you can use the gem directly, add this line to your application's Gemfile.
