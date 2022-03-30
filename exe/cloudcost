@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+require 'optimist'
+require 'gpe/gcc/base'
+require 'yaml'
+
+=begin
+
+    Pull Azure and AWS pricing and put the resulting files in the output directory
+    pointed to by the --output | -o specification.
+
+    AWS
+    
+        Permissions are assumed to be on the local file system for
+        the user running this.
+
+    Azure
+    
+        Permissions for the SKU file will be found in the $HOME/.cloudcost 
+        YAML file. This must be created before first run.
+        
+        The pricing file is public. There is no authentication needed.
+
+=end
+
+include GPE::GCC::Pricing::Azure
+include GPE::GCC::Pricing::AWS
+
+module GPE; module GCC; module Pricing
+    
+    Log = Logger.new(STDOUT)
+
+    Config = File.join(ENV['HOME'],'.cloudcost')
+    ConfigSample = Config + '.sample'
+  
+    unless File.exist?(Config)
+        Log.error("You must create the config file: '#{Config}' (see #{ConfigSample}) ")
+        File.new(ConfigSample,'w').write(GPE::GCC::Pricing::SAMPLE_CONFIG)
+        exit 1
+    end
+
+    # Load from the .cloudcost file
+    CFG = YAML.load(File.open(Config))
+    
+    OPTS = Optimist::options do
+        opt :output, "Output Directory", :type => :string, :default => '.'
+        opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
+        opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
+    end
+
+    # Set output dir if it exists create cache under it.
+    output_dir = OPTS[:output]    
+    unless File.exist?(output_dir)
+        Log.error("Output directory does not exist: '#{output_dir}'")
+        exit 1
+    end
+
+    if OPTS[:azure]
+        Log.info("Collect and build Azure pricing files...")
+        azure_collect_and_build(output_dir)
+    end
+
+    if OPTS[:aws]
+        Log.info("Collect and build AWS pricing files...")
+        aws_collect_and_build(output_dir)
+    end
+
+end; end; end

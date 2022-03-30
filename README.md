@@ -1,43 +1,24 @@
 # Galileo Cloud Compass Pricing File "Get" Utility
 
-Used to create the `azure.json` and `aws.json` pricing files for the GCC product.
-
-The production destination for these 2 files is in the directory identified by the 
-following Galileo.config value:
-
-```ruby
-GCC_PRICING_DIR = Galileo.config[:ui]['gcc']['pricing']
-```
-
-This location is `<gpe-server-home>/ui/lib/galileo/visualizations/src/gcc/pricing`.
+Used to create `azure.json` and `aws.json` pricing files using AWS and Azure 
+pricing APIs and other magic.
 
 ## Installation
 
-Simpley clone the repo to run this standalone:
+Simply clone the repo to run this standalone:
 
 ```bash
-git clone git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git
-cd gpe-gcc-pricing
+git clone https://github.com/vgcrld/cloudcost.git
+cd cloudcost
 bundle install --path vendor/bundle
-mkdir gcc
-bundle exec gpe-gcc-pricing
-
-# Format the output (optional)
-cd gcc 
-jq '.' aws.json > f-aws.json
-jq '.' azure.json > f-azure.json
-
-# Move into the gpe-server branch for an MR  (make sure target dir is correct)
-mv f-aws.json ~/code/gpe-server/ui/lib/galileo/visualizations/src/gcc/pricing/aws.json
-mv f-azure.json ~/code/gpe-server/ui/lib/galileo/visualizations/src/gcc/pricing/azure.json
-
+bundle exec gpe-gcc-pricing 
 ```
 
 Or you can use the gem directly, add this line to your application's Gemfile.
 (this will vary based on where you fetch this from)
 
 ```ruby
-gem 'gpe-gcc-pricing', :git => "git@codebox.galileosuite.com:galileo/gpe-gcc-pricing.git"
+gem 'gpe-gcc-pricing', :git => "https://github.com/vgcrld/cloudcost.git"
 ```
 
 And then execute:
