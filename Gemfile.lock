@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cloudcost (1.0.0)
+    cloudcost (1.1.0)
       awesome_print
       aws-sdk-pricing
       optimist
