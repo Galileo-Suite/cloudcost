@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'optimist'
-require 'gpe/gcc/base'
 require 'yaml'
+require 'logger'
 
 =begin
 
@@ -23,46 +23,39 @@ require 'yaml'
 
 =end
 
-include GPE::GCC::Pricing::Azure
-include GPE::GCC::Pricing::AWS
+Log = Logger.new(STDOUT)
 
-module GPE; module GCC; module Pricing
-    
-    Log = Logger.new(STDOUT)
+OPTIONS = Optimist::options do
+    opt :output, "Output Directory", :type => :string, :default => ENV['HOME']
+    opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
+    opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
+end
 
-    Config = File.join(ENV['HOME'],'.cloudcost')
-    ConfigSample = Config + '.sample'
-  
-    unless File.exist?(Config)
-        Log.error("You must create the config file: '#{Config}' (see #{ConfigSample}) ")
-        File.new(ConfigSample,'w').write(GPE::GCC::Pricing::SAMPLE_CONFIG)
-        exit 1
-    end
+Config = File.join(ENV['HOME'],'.cloudcost')
+unless File.exist?(Config)
+    Log.error("Config not found: '#{Config}'. Loaded sample file. It must be updated.")
+    File.open(Config,'w'){ |f| f.write(Cloudcost::SAMPLE_CONFIG)}
+    exit 1
+end
+CFG = YAML.load(File.open(Config))
 
-    # Load from the .cloudcost file
-    CFG = YAML.load(File.open(Config))
-    
-    OPTS = Optimist::options do
-        opt :output, "Output Directory", :type => :string, :default => '.'
-        opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
-        opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
-    end
+# Set output dir if it exists create cache under it.
+output_dir = OPTIONS[:output]    
+unless File.exist?(output_dir)
+    Log.error("Output directory does not exist: '#{output_dir}'")
+    exit 1
+end
 
-    # Set output dir if it exists create cache under it.
-    output_dir = OPTS[:output]    
-    unless File.exist?(output_dir)
-        Log.error("Output directory does not exist: '#{output_dir}'")
-        exit 1
-    end
+if OPTIONS[:azure]
+    require 'cloudcost/azure'
+    include Azure
+    Log.info("Collect and build Azure pricing files...")
+    Azure.collect_and_build(output_dir)
+end
 
-    if OPTS[:azure]
-        Log.info("Collect and build Azure pricing files...")
-        azure_collect_and_build(output_dir)
-    end
-
-    if OPTS[:aws]
-        Log.info("Collect and build AWS pricing files...")
-        aws_collect_and_build(output_dir)
-    end
-
-end; end; end
+if OPTIONS[:aws]
+    require 'cloudcost/aws'
+    include AWS
+    Log.info("Collect and build AWS pricing files...")
+    AWS.collect_and_build(output_dir)
+end

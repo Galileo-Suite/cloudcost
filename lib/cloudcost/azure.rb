@@ -3,7 +3,6 @@ require 'json'
 require 'benchmark'
 require 'net/http'
 require 'ostruct'
-require 'logger'
 
 # {
 #     "clientId": "56b8cf44-e5d8-465a-b551-468fb1f9b8ca",
@@ -18,7 +17,7 @@ require 'logger'
 #     "managementEndpointUrl": "https://management.core.windows.net/"
 # }
 
-module GPE; module GCC; module Pricing; module Azure
+module Azure
 
     # CLIENTID        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
     # CLIENTSECRET    = "uu8eXz6RsrjVfsSae4bS_7Y~qB3RsGZ_4o"
@@ -160,7 +159,7 @@ module GPE; module GCC; module Pricing; module Azure
         return ret
     end
 
-    def azure_collect_and_build(output_dir)
+    def collect_and_build(output_dir)
 
         # Fetch and compile pricing for storage and vms
         storage = get_price_data_for('Storage')
@@ -225,4 +224,4 @@ module GPE; module GCC; module Pricing; module Azure
         Log.info("Merging all Azure files to '#{outname}'")
     end
 
-end; end; end; end
+end;

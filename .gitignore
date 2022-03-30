@@ -6,5 +6,5 @@
 /tmp/
 vendor
 ruby/
-aws.json
-azure.json
+*.json
+*.json
