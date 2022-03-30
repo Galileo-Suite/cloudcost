@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    gpe-gcc-pricing (1.0.0)
+    cloudcost (1.0.0)
       awesome_print
       aws-sdk-pricing
       optimist
@@ -29,7 +29,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  gpe-gcc-pricing!
+  cloudcost!
 
 BUNDLED WITH
-   1.17.1
+   2.1.4

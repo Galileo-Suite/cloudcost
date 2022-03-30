@@ -1,19 +1,19 @@
 require_relative 'lib/cloudcost/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "gpe-gcc-pricing"
+  spec.name          = "cloudcost"
   spec.version       = Cloudcost::VERSION
   spec.authors       = ["Rich Davis"]
-  spec.email         = ["rdavis@galileosuite.com"]
+  spec.email         = ["vgcrld@gmail.com"]
 
   spec.summary       = %q{Collect pricing files AWS and Azure.}
   spec.description   = %q{
     Store the AWS princing file and the Azure ratecard and pricing file
     in the directory identified by the -o file.
 
-    The Azure credentials are located in the script.
+    Azure credentials must be stored in $HOME/.cloudcost
 
-    The AWS must be configured locally.
+    The AWS cli must be configured locally.
   }
   spec.homepage      = "https://www.galileosuite.com"
   spec.license       = "EULA"
@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-
   spec.add_runtime_dependency "optimist"
   spec.add_runtime_dependency "awesome_print"
   spec.add_runtime_dependency "aws-sdk-pricing"
