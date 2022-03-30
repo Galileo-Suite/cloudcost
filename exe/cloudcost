@@ -25,39 +25,35 @@ require 'logger'
 
 Log = Logger.new(STDOUT)
 
-Config = File.join(ENV['HOME'],'.cloudcost')
-ConfigSample = Config + '.sample'
-
-unless File.exist?(Config)
-    Log.error("You must create the config file: '#{Config}' (see #{ConfigSample}) ")
-    File.new(ConfigSample,'w').write(GPE::GCC::Pricing::SAMPLE_CONFIG)
-    exit 1
-end
-
-# Load from the .cloudcost file
-CFG = YAML.load(File.open(Config))
-
-OPTS = Optimist::options do
+OPTIONS = Optimist::options do
     opt :output, "Output Directory", :type => :string, :default => ENV['HOME']
     opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
     opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
 end
 
+Config = File.join(ENV['HOME'],'.cloudcost')
+unless File.exist?(Config)
+    Log.error("Config not found: '#{Config}'. Loaded sample file. It must be updated.")
+    File.open(Config,'w'){ |f| f.write(Cloudcost::SAMPLE_CONFIG)}
+    exit 1
+end
+CFG = YAML.load(File.open(Config))
+
 # Set output dir if it exists create cache under it.
-output_dir = OPTS[:output]    
+output_dir = OPTIONS[:output]    
 unless File.exist?(output_dir)
     Log.error("Output directory does not exist: '#{output_dir}'")
     exit 1
 end
 
-if OPTS[:azure]
+if OPTIONS[:azure]
     require 'cloudcost/azure'
     include Azure
     Log.info("Collect and build Azure pricing files...")
     Azure.collect_and_build(output_dir)
 end
 
-if OPTS[:aws]
+if OPTIONS[:aws]
     require 'cloudcost/aws'
     include AWS
     Log.info("Collect and build AWS pricing files...")
