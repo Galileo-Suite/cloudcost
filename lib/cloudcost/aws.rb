@@ -3,7 +3,7 @@ require 'awesome_print'
 require 'logger'
 require 'tempfile'
 
-module GPE; module GCC; module Pricing; module AWS
+module AWS
 
     #
     #   Use the AWS Ruby SDK to get pricing data.
@@ -146,4 +146,4 @@ module GPE; module GCC; module Pricing; module AWS
 
     end
 
-end; end; end; end
+end

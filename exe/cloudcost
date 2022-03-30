@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 
 require 'optimist'
-require 'gpe/gcc/base'
 require 'yaml'
+require 'logger'
+
+require 'cloudcost/azure'
+require 'cloudcost/aws'
 
 =begin
 
@@ -23,46 +26,42 @@ require 'yaml'
 
 =end
 
-include GPE::GCC::Pricing::Azure
-include GPE::GCC::Pricing::AWS
+include Azure
+include AWS
 
-module GPE; module GCC; module Pricing
-    
-    Log = Logger.new(STDOUT)
+Log = Logger.new(STDOUT)
 
-    Config = File.join(ENV['HOME'],'.cloudcost')
-    ConfigSample = Config + '.sample'
-  
-    unless File.exist?(Config)
-        Log.error("You must create the config file: '#{Config}' (see #{ConfigSample}) ")
-        File.new(ConfigSample,'w').write(GPE::GCC::Pricing::SAMPLE_CONFIG)
-        exit 1
-    end
+Config = File.join(ENV['HOME'],'.cloudcost')
+ConfigSample = Config + '.sample'
 
-    # Load from the .cloudcost file
-    CFG = YAML.load(File.open(Config))
-    
-    OPTS = Optimist::options do
-        opt :output, "Output Directory", :type => :string, :default => '.'
-        opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
-        opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
-    end
+unless File.exist?(Config)
+    Log.error("You must create the config file: '#{Config}' (see #{ConfigSample}) ")
+    File.new(ConfigSample,'w').write(GPE::GCC::Pricing::SAMPLE_CONFIG)
+    exit 1
+end
 
-    # Set output dir if it exists create cache under it.
-    output_dir = OPTS[:output]    
-    unless File.exist?(output_dir)
-        Log.error("Output directory does not exist: '#{output_dir}'")
-        exit 1
-    end
+# Load from the .cloudcost file
+CFG = YAML.load(File.open(Config))
 
-    if OPTS[:azure]
-        Log.info("Collect and build Azure pricing files...")
-        azure_collect_and_build(output_dir)
-    end
+OPTS = Optimist::options do
+    opt :output, "Output Directory", :type => :string, :default => '.'
+    opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
+    opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
+end
 
-    if OPTS[:aws]
-        Log.info("Collect and build AWS pricing files...")
-        aws_collect_and_build(output_dir)
-    end
+# Set output dir if it exists create cache under it.
+output_dir = OPTS[:output]    
+unless File.exist?(output_dir)
+    Log.error("Output directory does not exist: '#{output_dir}'")
+    exit 1
+end
 
-end; end; end
+if OPTS[:azure]
+    Log.info("Collect and build Azure pricing files...")
+    azure_collect_and_build(output_dir)
+end
+
+if OPTS[:aws]
+    Log.info("Collect and build AWS pricing files...")
+    aws_collect_and_build(output_dir)
+end

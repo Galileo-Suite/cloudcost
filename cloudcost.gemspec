@@ -1,8 +1,8 @@
-require_relative 'lib/gpe/gcc/pricing/version'
+require_relative 'lib/cloudcost/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "gpe-gcc-pricing"
-  spec.version       = GPE::GCC::Pricing::VERSION
+  spec.version       = Cloudcost::VERSION
   spec.authors       = ["Rich Davis"]
   spec.email         = ["rdavis@galileosuite.com"]
 
