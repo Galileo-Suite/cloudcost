@@ -20,16 +20,16 @@ require 'logger'
 
 module GPE; module GCC; module Pricing; module Azure
 
-    CLIENTID        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
-    CLIENTSECRET    = "uu8eXz6RsrjVfsSae4bS_7Y~qB3RsGZ_4o"
-    SUBSCRIPTION    = "345c9bee-914f-42e8-9600-77b3b10ba069"   # https://portal.azure.com/#blade/Microsoft_Azure_GTM/ModernBillingMenuBlade/Overview
-    TENENT          = "4376b3ca-4676-4ba7-8757-8b7fa5c43d83"   # https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview
+    # CLIENTID        = "56b8cf44-e5d8-465a-b551-468fb1f9b8ca"
+    # CLIENTSECRET    = "uu8eXz6RsrjVfsSae4bS_7Y~qB3RsGZ_4o"
+    # SUBSCRIPTION    = "345c9bee-914f-42e8-9600-77b3b10ba069"   # https://portal.azure.com/#blade/Microsoft_Azure_GTM/ModernBillingMenuBlade/Overview
+    # TENENT          = "4376b3ca-4676-4ba7-8757-8b7fa5c43d83"   # https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview
 
     # We will collect all us locations but when building the price
     # in the azure_build_price_file.rb script we will only get
     # eastus data.
-    Locations = {
-        "eastus"         => "US East",
+    #Locations = {
+        # "eastus"         => "US East",
         # "westus"         => "US West",
         # "centralus"      => "US Central",
         # "eastus2"        => "US East 2",
@@ -37,7 +37,7 @@ module GPE; module GCC; module Pricing; module Azure
         # "northcentralus" => "US North Central",
         # "southcentralus" => "US South Central",
         # "westcentralus"  => "US West Central",
-    }
+    # }
     
     def check_terms(terms)
         case 
@@ -61,13 +61,13 @@ module GPE; module GCC; module Pricing; module Azure
 
     def get_azure_auth()
         Log.info("Getting the Azure Access token.")
-        uri = URI("https://login.microsoftonline.com/#{TENENT}/oauth2/token")
+        uri = URI("https://login.microsoftonline.com/#{CFG['AZURE_TENENT']}/oauth2/token")
         res = Net::HTTP::post_form(uri, 
             {
                 'grant_type' => "client_credentials",
                 'resource' => "https://management.core.windows.net",
-                'client_id' => CLIENTID,
-                'client_secret' => CLIENTSECRET,
+                'client_id' => CFG['AZURE_CLIENTID'],
+                'client_secret' => CFG['AZURE_CLIENTSECRET'],
             }
         )
         return parse_response(res)['access_token']
@@ -87,7 +87,7 @@ module GPE; module GCC; module Pricing; module Azure
 
     def get_sku_card_response(access_token)
         Log.info("Getting Azure SKU (product) list.")
-        path = "https://management.azure.com/subscriptions/#{SUBSCRIPTION}/providers/Microsoft.Compute/skus?api-version=2016-08-31-preview&%24filter=OfferDurableId+eq+'MS-AZR-0003P'+and+Currency+eq+'USD'+and+Locale+eq+'en-US'+and+RegionInfo+eq+'US'"
+        path = "https://management.azure.com/subscriptions/#{CFG['AZURE_SUBSCRIPTION']}/providers/Microsoft.Compute/skus?api-version=2016-08-31-preview&%24filter=OfferDurableId+eq+'MS-AZR-0003P'+and+Currency+eq+'USD'+and+Locale+eq+'en-US'+and+RegionInfo+eq+'US'"
         uri = URI(path)
         http = Net::HTTP.new(uri.hostname, uri.port)
         http.use_ssl = true
@@ -100,8 +100,8 @@ module GPE; module GCC; module Pricing; module Azure
     def translate_location(loc)
         Log.info("Translate location: #{loc}")
         loc = loc.to_s
-        keys = Locations.keys
-        vals = Locations.values
+        keys = CFG['AZURE_LOCATIONS'].keys
+        vals = CFG['AZURE_LOCATIONS'].values
         k = keys.index(loc)
         v = vals.index(loc)
         return vals[k] unless k.nil?
@@ -147,14 +147,14 @@ module GPE; module GCC; module Pricing; module Azure
     def filter_sku_for_us_locations_and_vms_disks_only(sku)
         ret = sku.group_by do |x| 
             ['virtualMachines','disks'].include?(x["resourceType"]) && 
-            Locations.keys.include?(x["locations"].first)
+            CFG['AZURE_LOCATIONS'].keys.include?(x["locations"].first)
         end[true]
         return ret
     end
 
     def get_price_data_for(type)
         ret = []
-        Locations.keys.each do |location| 
+        CFG['AZURE_LOCATIONS'].keys.each do |location| 
             ret += fetch_azure_data_from_web(type, location)
         end
         return ret
