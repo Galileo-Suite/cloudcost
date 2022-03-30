@@ -92,7 +92,7 @@ module AWS
     end
 
 
-    def aws_collect_and_build(output_dir)
+    def collect_and_build(output_dir)
 
        files = []    
 

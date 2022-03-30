@@ -4,9 +4,6 @@ require 'optimist'
 require 'yaml'
 require 'logger'
 
-require 'cloudcost/azure'
-require 'cloudcost/aws'
-
 =begin
 
     Pull Azure and AWS pricing and put the resulting files in the output directory
@@ -26,9 +23,6 @@ require 'cloudcost/aws'
 
 =end
 
-include Azure
-include AWS
-
 Log = Logger.new(STDOUT)
 
 Config = File.join(ENV['HOME'],'.cloudcost')
@@ -44,7 +38,7 @@ end
 CFG = YAML.load(File.open(Config))
 
 OPTS = Optimist::options do
-    opt :output, "Output Directory", :type => :string, :default => '.'
+    opt :output, "Output Directory", :type => :string, :default => ENV['HOME']
     opt :azure, "Get Azure Pricing", :type => :boolean, :default => true
     opt :aws, "Get AWS Pricing", :type => :boolean, :default => true
 end
@@ -57,11 +51,15 @@ unless File.exist?(output_dir)
 end
 
 if OPTS[:azure]
+    require 'cloudcost/azure'
+    include Azure
     Log.info("Collect and build Azure pricing files...")
-    azure_collect_and_build(output_dir)
+    Azure.collect_and_build(output_dir)
 end
 
 if OPTS[:aws]
+    require 'cloudcost/aws'
+    include AWS
     Log.info("Collect and build AWS pricing files...")
-    aws_collect_and_build(output_dir)
+    AWS.collect_and_build(output_dir)
 end

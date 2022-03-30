@@ -159,7 +159,7 @@ module Azure
         return ret
     end
 
-    def azure_collect_and_build(output_dir)
+    def collect_and_build(output_dir)
 
         # Fetch and compile pricing for storage and vms
         storage = get_price_data_for('Storage')
