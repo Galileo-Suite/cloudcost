@@ -9,7 +9,7 @@ Simply clone the repo to run this standalone:
 
 ```bash
 bundle install --path vendor/bundle
-bundle exec gpe-gcc-pricing 
+bundle exec cloudcost 
 ```
 
 ## Usage
