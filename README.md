@@ -9,11 +9,13 @@ This script assumes:
 
 * You already have been granted access to pricing data in both Azure and AWS
 * AWS cli is configured locally
-* Azure CLI (az) is configured locally 
+* You have Azure credentials you can provide in the .cloudcost config file.
 
 ## Installation
 
-Simply clone the repo to run this standalone:
+Simply clone the repo to run this standalone. Calling it like this will collect
+both AWS and Azure pricing files to the users home directory. Use `--help` to get 
+options or see below.
 
 ```bash
 bundle install
@@ -22,7 +24,7 @@ bundle exec cloudcost
 
 ## Usage
 
-The options are very basic. you can alway sget this menu with the `--help` option.
+The options are basic.
 
 ```bash
 bundle exec cloudcost --help 
@@ -35,19 +37,20 @@ Options:
 
 # Pricing File Formats (AWS and Azure)
 
-The AWS price file caputred will remain intact.  It is not modified any way.
+The AWS price file is caputred as-is and will remain intact.  It is not modified any way.
 
 The Azure SKU and pricing data file from MS is merged together via this gem 
 to more closely resemble the way the AWS pricing file is structured. It is an
 array of product hashes. 
 
-Once both AWS and Azure are pulled then 
-each product hash in the array has the capabilties or characteristics of a compute or disk
+Each product hash in the array has the capabilties or characteristics of a compute or disk
 product and attached is a list of product terms.  The systems can then besearched by the 
 characteristics (CPU, Memory) and the pricing terms are associated.
 
 Run the script and review a formated version of the `aws.json` and `azure.json` files 
 outputed by this code to get more familiar with the contents.
+
+Once you see the files live the data will make more sense.
 
 ## Azure and AWS Authentication
 
