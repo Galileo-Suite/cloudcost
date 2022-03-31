@@ -3,13 +3,21 @@
 Used to create `azure.json` and `aws.json` pricing files using AWS and Azure 
 pricing APIs (and additional magic).
 
+## Prereqs
+
+This script assumes:
+
+* You already have been granted access to pricing data in both Azure and AWS
+* AWS cli is configured locally
+* Azure CLI (az) is configured locally 
+
 ## Installation
 
 Simply clone the repo to run this standalone:
 
 ```bash
-bundle install --path vendor/bundle
-bundle exec cloudcost 
+bundle install
+bundle exec cloudcost
 ```
 
 ## Usage
